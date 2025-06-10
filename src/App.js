@@ -82,7 +82,7 @@ function App() {
     if (tipoIncidente) params.append('tipo_incidente', tipoIncidente);
     if (searchTerm.trim() !== '') params.append('amenaza', searchTerm.trim());
 
-    fetch(`http://localhost:8000/threats?${params.toString()}`)
+    fetch(`https://catalogo-amenazas-back.onrender.com/threats?${params.toString()}`)
       .then((res) => {
         if (!res.ok) throw new Error('Error al obtener amenazas');
         return res.json();
