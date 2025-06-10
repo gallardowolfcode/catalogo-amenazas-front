@@ -261,32 +261,31 @@ function App() {
   };
 
 
-  const exportToCSV = () => {
-    if (amenazas.length === 0) {
-      alert('No hay datos para exportar');
-      return;
-    }
-
-    const headers = ['Amenaza', 'Tipo de Incidente', 'Severidad', 'Prioridad', 'Fuentes de Detección'];
-    const rows = amenazas.map((a) => [
-      a.amenaza,
-      a.tipo_incidente,
-      a.severidad,
-      a.prioridad,
-      (a.fuentes_deteccion || []).join(', '),
-    ]);
-
-    const csvContent =
-      [headers, ...rows]
-        .map((e) =>
-          e
-            .map((field) => `"${(field ?? '').toString().replace(/"/g, '""')}"`)
-            .join(',')
-        )
-        .join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, 'amenazas_export.csv');
+  const exportCsvFromBackend = () => {
+    fetch('https://catalogo-amenazas-back.onrender.com/threats/export/csv', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'text/csv',
+      },
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error('Error al descargar CSV');
+        return response.blob();
+      })
+      .then((blob) => {
+        // Crear enlace de descarga
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'amenazas_export.csv'; // nombre del archivo que quieres
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
   };
 
   return (
@@ -372,8 +371,8 @@ function App() {
           Nueva Amenaza
         </Button>
 
-        <Button variant="outlined" color="secondary" onClick={exportToCSV}>
-          Exportar CSV
+        <Button variant="contained" onClick={exportCsvFromBackend}>
+          Exportar CSV desde backend
         </Button>
       </Box>
 
